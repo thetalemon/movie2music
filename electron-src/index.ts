@@ -11,7 +11,7 @@ import prepareNext from 'electron-next'
 app.on('ready', async () => {
   await prepareNext('./renderer')
 
-  require('child_process').spawn('cargo', ['run']);
+  require('child_process').spawn('python', ['./backend/index.py']);
 
   const mainWindow = new BrowserWindow({
     width: 800,

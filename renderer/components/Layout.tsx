@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 import styled from '@emotion/styled'
 
-const MainBody = styled.body`
+const MainBody = styled.div`
 background: #fff;
 `
 
@@ -13,7 +13,7 @@ type Props = {
 }
 
 const Layout = ({ children, title = 'This is the default title' }: Props) => (
-  <div>
+  <MainBody>
     <Head>
       <title>{title}</title>
       <meta charSet="utf-8" />
@@ -34,14 +34,14 @@ const Layout = ({ children, title = 'This is the default title' }: Props) => (
         </Link>
       </nav>
     </header>
-    <MainBody>
+    <div>
       {children}
-    </MainBody>
+    </div>
     <footer>
       <hr />
       <span>I'm here to stay (Footer)</span>
     </footer>
-  </div>
+  </MainBody>
 )
 
 export default Layout
