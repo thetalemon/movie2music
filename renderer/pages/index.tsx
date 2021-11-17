@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Layout from '../components/Layout'
-import { apiClient } from "../libs/appClinent";
+// import { apiClient } from "../libs/appClinent";
 
 const IndexPage = () => {
-  const [text, setText] = useState('')
+  // const [text, setText] = useState('')
 
   useEffect(() => {
     // add a listener to 'message' channel
@@ -13,14 +13,16 @@ const IndexPage = () => {
     })
   }, [])
 
-  apiClient
-    .get("/", {
-    })
-    .then((response) => {
-      setText(response.data)
-    })
+  // apiClient
+  //   .get("/", {
+  //   })
+  //   .then((response) => {
+  //     setText(response.data)
+  //   })
+
 
   const onSayHiClick = () => {
+    global.ipcRenderer.send('download', 'sample.mid')
     global.ipcRenderer.send('message', 'hi from next')
   }
 
@@ -33,9 +35,9 @@ const IndexPage = () => {
           <a>About</a>
         </Link>
       </p>
-      <p>
+      {/* <p>
         {text}
-      </p>
+      </p> */}
     </Layout>
   )
 }

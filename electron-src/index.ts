@@ -6,14 +6,15 @@ import { format } from 'url'
 import { BrowserWindow, app, ipcMain, IpcMainEvent } from 'electron'
 import isDev from 'electron-is-dev'
 import prepareNext from 'electron-next'
+import { download } from "electron-dl";
 
-// Prepare the renderer once the app is ready
+let mainWindow: BrowserWindow
 app.on('ready', async () => {
   await prepareNext('./renderer')
 
   require('child_process').spawn('python', ['./backend/index.py']);
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -34,11 +35,22 @@ app.on('ready', async () => {
   mainWindow.loadURL(url)
 })
 
+
 // Quit the app once all windows are closed
 app.on('window-all-closed', app.quit)
 
 // listen the channel `message` and resend the received message to the renderer process
-ipcMain.on('message', (event: IpcMainEvent, message: any) => {
-  console.log(message)
-  setTimeout(() => event.sender.send('message', 'hi from electron'), 500)
+ipcMain.on('message', (event: IpcMainEvent, message: string) => {
+  setTimeout(() => event.sender.send('message', message), 500)
 })
+
+ipcMain.on("download", async (_event: IpcMainEvent, filename: string) => {
+  await download(
+    mainWindow,
+    "http://127.0.0.1:5000/",
+    {
+      directory: app.getPath('desktop'),
+      filename: filename,
+    }
+  );
+});
