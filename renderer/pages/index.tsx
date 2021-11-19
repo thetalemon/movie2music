@@ -5,6 +5,7 @@ import Layout from '../components/Layout'
 
 const IndexPage = () => {
   // const [text, setText] = useState('')
+  const [filePath, setFilePath] = useState('')
 
   useEffect(() => {
     // add a listener to 'message' channel
@@ -25,19 +26,23 @@ const IndexPage = () => {
     global.ipcRenderer.send('download', 'sample.mid')
     global.ipcRenderer.send('message', 'hi from next')
   }
+  const onClickGetDirPath = async () => {
+    setFilePath(await global.ipcRenderer.invoke('getFilePath'))
+  }
 
   return (
     <Layout title="Home | Next.js + TypeScript + Electron Example">
       <h1>Hello Next.js 👋</h1>
       <button onClick={onSayHiClick}>Say hi to electron</button>
+      <button onClick={onClickGetDirPath}>get dir path</button>
       <p>
         <Link href="/about">
           <a>About</a>
         </Link>
       </p>
-      {/* <p>
-        {text}
-      </p> */}
+      <p>
+        {filePath}
+      </p>
     </Layout>
   )
 }
