@@ -3,10 +3,11 @@ import { join } from 'path'
 import { format } from 'url'
 
 // Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent } from 'electron'
+import { BrowserWindow, app, ipcMain, IpcMainEvent, dialog } from 'electron'
 import isDev from 'electron-is-dev'
 import prepareNext from 'electron-next'
 import { download } from "electron-dl";
+import { IpcMainInvokeEvent } from 'electron/main'
 
 let mainWindow: BrowserWindow
 app.on('ready', async () => {
@@ -35,7 +36,6 @@ app.on('ready', async () => {
   mainWindow.loadURL(url)
 })
 
-
 // Quit the app once all windows are closed
 app.on('window-all-closed', app.quit)
 
@@ -51,6 +51,18 @@ ipcMain.on("download", async (_event: IpcMainEvent, filename: string) => {
     {
       directory: app.getPath('desktop'),
       filename: filename,
+      saveAs: true
     }
   );
+});
+
+
+ipcMain.handle("getFilePath", async (_event: IpcMainInvokeEvent) => {
+  const fileName =　await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Select a text file',
+    defaultPath: '.',
+  });
+
+  return fileName.filePaths[0]
 });
