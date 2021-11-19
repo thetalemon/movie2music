@@ -51,6 +51,7 @@ ipcMain.on("download", async (_event: IpcMainEvent, filename: string) => {
     {
       directory: app.getPath('desktop'),
       filename: filename,
+      saveAs: true
     }
   );
 });
