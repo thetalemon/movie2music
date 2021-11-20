@@ -13,7 +13,7 @@ let mainWindow: BrowserWindow
 app.on('ready', async () => {
   await prepareNext('./renderer')
 
-  require('child_process').spawn('python', ['./backend/index.py']);
+  var subpy = require('child_process').spawn('python', ['./backend/index.py']);
 
   mainWindow = new BrowserWindow({
     width: 800,
@@ -25,8 +25,12 @@ app.on('ready', async () => {
     },
   })
 
+  mainWindow.on('closed', function() {
+    subpy.kill('SIGINT');
+  });
+
   const url = isDev
-    ? 'http://localhost:8000/'
+    ? 'http://127.0.0.1:8000/'
     : format({
         pathname: join(__dirname, '../renderer/out/index.html'),
         protocol: 'file:',
@@ -56,10 +60,9 @@ ipcMain.on("download", async (_event: IpcMainEvent, filename: string) => {
   );
 });
 
-
 ipcMain.handle("getFilePath", async (_event: IpcMainInvokeEvent) => {
   const fileName =　await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory'],
+    properties: ['openFile'],
     title: 'Select a text file',
     defaultPath: '.',
   });
