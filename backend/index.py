@@ -7,25 +7,35 @@ from flask_cors import CORS, cross_origin
 from makeMusic import create_music
 
 app = Flask(__name__)
-CORS(app, support_credentials=True, resources={r"/*": {"credentials": True, "origins": "http://127.0.0.1:8000"}})
-XLSX_MIMETYPE = 'audio/midi'
+CORS(
+    app,
+    support_credentials=True,
+    resources={r"/*": {"credentials": True, "origins": "http://127.0.0.1:8000"}},
+)
+XLSX_MIMETYPE = "audio/midi"
+
 
 @app.route("/", methods=["GET", "POST"])
-@cross_origin(supports_credentials=True) 
+@cross_origin(supports_credentials=True)
 def index():
-  create_music()
+    create_music()
 
-  downloadFileName = 'sample.mid'
-  downloadFile = './sample.mid'
+    downloadFileName = "sample.mid"
+    downloadFile = "./sample.mid"
 
-  return send_file(downloadFile, as_attachment = True, \
-      download_name = downloadFileName, \
-      mimetype = XLSX_MIMETYPE)
+    return send_file(
+        downloadFile,
+        as_attachment=True,
+        download_name=downloadFileName,
+        mimetype=XLSX_MIMETYPE,
+    )
+
 
 @app.route("/uploadFile", methods=["POST"])
-@cross_origin(supports_credentials=True) 
-def uploadFile():  
-  return request.form["file"]
+@cross_origin(supports_credentials=True)
+def uploadFile():
+    return request.form["file"]
+
 
 if __name__ == "__main__":
-  app.run(host="127.0.0.1", port=5000)
+    app.run(host="127.0.0.1", port=5000)
