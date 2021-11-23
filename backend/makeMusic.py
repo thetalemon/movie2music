@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pretty_midi, os, glob, re
 
 output_file_name = "/sample"
