@@ -5,6 +5,7 @@ from __future__ import print_function
 from flask import Flask, send_file, request
 from flask_cors import CORS, cross_origin
 from makeMusic import create_music
+from imageProcessing import imgProcess
 
 app = Flask(__name__)
 CORS(
@@ -29,6 +30,12 @@ def index():
         download_name=downloadFileName,
         mimetype=XLSX_MIMETYPE,
     )
+
+
+@app.route("/process/img", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def processImg():
+    return imgProcess(request.form["file"])
 
 
 @app.route("/uploadFile", methods=["POST"])

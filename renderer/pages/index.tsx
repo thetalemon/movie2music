@@ -6,6 +6,7 @@ import { apiClient } from "../libs/appClinent";
 const IndexPage = () => {
   // const [text, setText] = useState('')
   const [filePath, setFilePath] = useState('')
+  const [detectedColor, setDetectedColor] = useState('')
 
   useEffect(() => {
     global.ipcRenderer.addListener('message', (_event, args) => {
@@ -22,16 +23,15 @@ const IndexPage = () => {
     setFilePath(await global.ipcRenderer.invoke('getFilePath'))
   }
 
-  const onClickCopyFile = async () => {
-    
+  const onClickDoImgProcess = async () => {
     let formData = new FormData();
+    console.log(filePath)
     formData.append("file", filePath);
     apiClient
-      .post("/uploadFile", formData
-      )
+      .post("/process/img", formData)
       .then((response) => {
-        // memo: ここで渡した絶対パスの画像・動画を参照して自動生成を行うようにする
-        // console.log(response)
+        console.log(response)
+        setDetectedColor(response.data)
       })
   }
 
@@ -40,7 +40,7 @@ const IndexPage = () => {
       <h1>Hello Next.js 👋</h1>
       <button onClick={onSayHiClick}>Say hi to electron</button>
       <button onClick={onClickSetFile}>set file</button>
-      <button onClick={onClickCopyFile}>copy file</button>
+      <button onClick={onClickDoImgProcess}>do img processing</button>
       <p>
         <Link href="/about">
           <a>About</a>
@@ -48,6 +48,9 @@ const IndexPage = () => {
       </p>
       <p>
         {filePath}
+      </p>
+      <p>
+        {detectedColor}
       </p>
     </Layout>
   )
