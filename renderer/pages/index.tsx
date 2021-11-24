@@ -4,18 +4,28 @@ import Layout from '../components/Layout'
 import { apiClient } from "../libs/appClinent";
 
 const IndexPage = () => {
-  // const [text, setText] = useState('')
   const [filePath, setFilePath] = useState('')
   const [detectedColor, setDetectedColor] = useState('')
+  const [pathList, setPathList] = useState([])  
 
   useEffect(() => {
     global.ipcRenderer.addListener('message', (_event, args) => {
       alert(args)
     })
+    apiClient
+    .get("/process/complete")
+    .then((response) => {
+      setPathList(response.data.pathList)
+    })
   }, [])
 
+  const htmlPathList = () => {
+    return pathList.map((path: string) => {
+      return (<button onClick={() => onClickGetFile(path)}>{path}</button>)
+    })
+  }
+
   const onSayHiClick = () => {
-    global.ipcRenderer.send('download', 'sample.mid')
     global.ipcRenderer.send('message', 'hi from next')
   }
 
@@ -23,14 +33,16 @@ const IndexPage = () => {
     setFilePath(await global.ipcRenderer.invoke('getFilePath'))
   }
 
+  const onClickGetFile = async (path: string) => {
+    global.ipcRenderer.send('download', path)
+  }
+
   const onClickDoImgProcess = async () => {
     let formData = new FormData();
-    console.log(filePath)
     formData.append("file", filePath);
     apiClient
       .post("/process/img", formData)
       .then((response) => {
-        console.log(response)
         setDetectedColor(response.data)
       })
   }
@@ -46,6 +58,7 @@ const IndexPage = () => {
           <a>About</a>
         </Link>
       </p>
+      {htmlPathList()}
       <p>
         {filePath}
       </p>

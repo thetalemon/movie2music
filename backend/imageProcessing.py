@@ -3,10 +3,12 @@
 
 import cv2
 import numpy as np
+from makeMusic import create_music
 
 
 def imgProcess(path):
     img = cv2.imread(path)
+    create_music(path)
     return getMostColorName(img)
 
 

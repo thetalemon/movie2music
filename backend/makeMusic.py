@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import pretty_midi, os, glob, re
+from pathlib import Path
 
-output_file_name = "/sample"
 output_file_ext = ".mid"
 
 
-def create_music():
+def create_music(path):
     new_music = pretty_midi.PrettyMIDI()
     cello_program = pretty_midi.instrument_name_to_program("Cello")
     cello = pretty_midi.Instrument(program=cello_program)
@@ -23,17 +23,34 @@ def create_music():
         time = time + 0.5
     new_music.instruments.append(cello)
 
-    files = glob.glob(
-        os.path.dirname(__file__) + "/" + output_file_name + "*" + output_file_ext
-    )
-    numbering_file_list = [i for i in files if re.search(r"\d+", i)]
-    number_list = [int(re.search(r"\d+", i).group()) for i in numbering_file_list]
+    filename = Path(path).stem
+    files = [
+        Path(file).stem
+        for file in glob.glob(
+            os.path.dirname(__file__) + "/output/" + filename + "*" + output_file_ext
+        )
+    ]
+    numbering_file_list = [i for i in files if re.search(r"(\d)+", i)]
 
-    max_num = max(number_list)
+    print(files)
+
+    print(os.path.dirname(__file__) + "/output/" + filename + ".mid")
 
     if len(files) == 0:
-        new_music.write(os.path.dirname(__file__) + "/sample.mid")
+        new_music.write(os.path.dirname(__file__) + "/output/" + filename + ".mid")
     else:
+        number_list = [int(re.search(r"\d+", i).group()) for i in numbering_file_list]
+        print(len(number_list))
+        print(number_list)
+        max_num = 0
+        if len(number_list) != 0:
+            max_num = max(number_list)
+
         new_music.write(
-            os.path.dirname(__file__) + "/sample(" + str(max_num + 1) + ").mid"
+            os.path.dirname(__file__)
+            + "/output/"
+            + filename
+            + "("
+            + str(max_num + 1)
+            + ").mid"
         )
