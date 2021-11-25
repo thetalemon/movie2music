@@ -1,7 +1,45 @@
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import Layout from '../components/Layout'
 import { apiClient } from "../libs/appClinent";
+import styled from '@emotion/styled'
+
+const PathTable = styled.table`
+  border: #4d7eaf 2px solid;
+  border-radius: 4px;
+	border-collapse: collapse;
+  tr {
+    width: 100%;
+    border-top: #4d7eaf 1px solid;
+    border-bottom: #4d7eaf 1px solid;
+  }
+  td {
+    width: 100%;
+    padding: 8px 16px;
+    &:hover{
+      opacity: .5;
+      cursor: pointer;
+    }
+  }
+`
+
+const TitleH1 = styled.h1`
+  margin-bottom: 4px;
+`
+
+const GeneralButton = styled.button`
+  background: #d9d6ff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  &:hover{
+    opacity: .7;
+    cursor: pointer;
+  }
+`
+
+const GeneralSection = styled.section`
+  margin-left: 8px;
+`
 
 const IndexPage = () => {
   const [filePath, setFilePath] = useState('')
@@ -21,12 +59,24 @@ const IndexPage = () => {
 
   const htmlPathList = () => {
     return pathList.map((path: string) => {
-      return (<button onClick={() => onClickGetFile(path)}>{path}</button>)
+      return (
+        <tr key={path}>
+          <td onClick={() => onClickGetFile(path)}>{path}</td>
+        </tr>
+      )
     })
   }
 
-  const onSayHiClick = () => {
-    global.ipcRenderer.send('message', 'hi from next')
+  function FileSelected (props: { filePath: string; }) {
+    if (!props.filePath) {
+      return null;
+    }
+    return (
+      <p>
+        選択中のファイル: {filePath}<br/>
+        <GeneralButton onClick={onClickDoImgProcess}>選択したファイルで処理を開始</GeneralButton>
+      </p>
+    )
   }
 
   const onClickSetFile = async () => {
@@ -49,22 +99,22 @@ const IndexPage = () => {
 
   return (
     <Layout title="Home | Next.js + TypeScript + Electron Example">
-      <h1>Hello Next.js 👋</h1>
-      <button onClick={onSayHiClick}>Say hi to electron</button>
-      <button onClick={onClickSetFile}>set file</button>
-      <button onClick={onClickDoImgProcess}>do img processing</button>
-      <p>
-        <Link href="/about">
-          <a>About</a>
-        </Link>
-      </p>
-      {htmlPathList()}
-      <p>
-        {filePath}
-      </p>
-      <p>
-        {detectedColor}
-      </p>
+      <TitleH1>動画に基づいた音楽を作る</TitleH1>
+      <GeneralSection>
+        <GeneralButton onClick={onClickSetFile}>ファイルを選択</GeneralButton>
+      </GeneralSection>
+      <GeneralSection>
+        <FileSelected filePath={filePath} />
+      </GeneralSection>
+
+      <TitleH1>Generated files</TitleH1>
+      <GeneralSection>
+        <PathTable>
+          <tbody>
+            {htmlPathList()}
+          </tbody>
+        </PathTable>
+      </GeneralSection>
     </Layout>
   )
 }

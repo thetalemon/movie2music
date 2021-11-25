@@ -59,7 +59,7 @@ ipcMain.handle('getFilePath', async (_event: IpcMainInvokeEvent) => {
   const fileName = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
     title: 'Select a text file',
-    defaultPath: '.',
+    defaultPath: app.getPath('desktop'),
   });
 
   return fileName.filePaths[0];
