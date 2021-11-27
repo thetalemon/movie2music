@@ -22,10 +22,11 @@ def getMostColorName(img):
 
 
 def movieProcessing():
-    mov = cv2.VideoCapture("./sample3.mov")
+    mov = cv2.VideoCapture("./sampleFiles/sample3.mov")
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
 
+    # 5フレームずつ
     fpsRangeList = list(range(0, FRAME_COUNT, 5))
 
     FEATURE_PARAMS = dict(maxCorners=100, qualityLevel=0.3, minDistance=7, blockSize=7)
@@ -43,6 +44,7 @@ def movieProcessing():
     p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
 
     mask = np.zeros_like(old_frame)
+    allVectors = list(range(len(fpsRangeList)))
     for i, j in enumerate(fpsRangeList):
         _, frame = mov.read()
 
@@ -54,15 +56,17 @@ def movieProcessing():
         if p1 is not None:
             good_new = p1[st == 1]
             good_old = p0[st == 1]
+            vectors = list(range(len(good_new)))
 
-            for i, (new, old) in enumerate(zip(good_new, good_old)):
+            for k, (new, old) in enumerate(zip(good_new, good_old)):
                 a, b = new.ravel()
                 c, d = old.ravel()
 
                 mask = cv2.line(
-                    mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2
+                    mask, (int(a), int(b)), (int(c), int(d)), color[k].tolist(), 2
                 )
-                frame = cv2.circle(frame, (int(a), int(b)), 5, color[i].tolist(), -1)
+                vectors[k] = abs((c - a) ** 2 + (d - b) ** 2)
+                frame = cv2.circle(frame, (int(a), int(b)), 5, color[k].tolist(), -1)
 
             if len(good_new) != 0:
                 old_gray = frame_gray.copy()
@@ -70,6 +74,8 @@ def movieProcessing():
             else:
                 old_gray = frame_gray.copy()
                 p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
+
+            allVectors[i] = vectors
 
         img = cv2.add(frame, mask)
 
@@ -80,3 +86,4 @@ def movieProcessing():
 
         getMostColorName(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
+    print({"second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)), "vectors": allVectors})
