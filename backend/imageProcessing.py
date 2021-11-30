@@ -45,6 +45,8 @@ def movieProcessing():
 
     mask = np.zeros_like(old_frame)
     allVectors = list(range(len(fpsRangeList)))
+    allUpFlg = list(range(len(fpsRangeList)))
+    allCenterFlg = list(range(len(fpsRangeList)))
     for i, j in enumerate(fpsRangeList):
         _, frame = mov.read()
 
@@ -52,11 +54,15 @@ def movieProcessing():
         p1, st, err = cv2.calcOpticalFlowPyrLK(
             old_gray, frame_gray, p0, None, **LK_PARAMS
         )
+        width = mov.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = mov.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         if p1 is not None:
             good_new = p1[st == 1]
             good_old = p0[st == 1]
             vectors = list(range(len(good_new)))
+            upFlg = list(range(len(good_new)))
+            centerFlg = list(range(len(good_new)))
 
             for k, (new, old) in enumerate(zip(good_new, good_old)):
                 a, b = new.ravel()
@@ -66,7 +72,11 @@ def movieProcessing():
                     mask, (int(a), int(b)), (int(c), int(d)), color[k].tolist(), 2
                 )
                 vectors[k] = abs((c - a) ** 2 + (d - b) ** 2)
+                upFlg[k] = (c - a) > 0
                 frame = cv2.circle(frame, (int(a), int(b)), 5, color[k].tolist(), -1)
+                xCenterFlg = width * 0.25 < c and width * 0.75 > c
+                yCenterFlg = height * 0.25 < d and height * 0.75 > d
+                centerFlg[k] = xCenterFlg and yCenterFlg
 
             if len(good_new) != 0:
                 old_gray = frame_gray.copy()
@@ -76,6 +86,8 @@ def movieProcessing():
                 p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
 
             allVectors[i] = vectors
+            allUpFlg[i] = upFlg
+            allCenterFlg[i] = centerFlg
 
         img = cv2.add(frame, mask)
 
@@ -86,4 +98,12 @@ def movieProcessing():
 
         getMostColorName(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
-    print({"second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)), "vectors": allVectors})
+
+    print(
+        {
+            "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
+            "vectors": allVectors,
+            "upFlg": allUpFlg,
+            "centerFlg": allCenterFlg,
+        }
+    )
