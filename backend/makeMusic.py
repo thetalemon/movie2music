@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pretty_midi, os, glob, re
+import pretty_midi, glob, re
 from pathlib import Path
+from scipy.io import wavfile
 
-output_file_ext = ".mid"
+OUTPUT_FILE_EXT = ".wav"
+CURRENT_DIR = str(Path(__file__).resolve().parent)
+OUTPUT_DIR = str(Path(__file__).resolve().parent) + "/output"
 
 
 def create_music(path):
@@ -23,34 +26,43 @@ def create_music(path):
         time = time + 0.5
     new_music.instruments.append(cello)
 
-    filename = Path(path).stem
+    input_filename = Path(path).stem
     files = [
         Path(file).stem
-        for file in glob.glob(
-            os.path.dirname(__file__) + "/output/" + filename + "*" + output_file_ext
-        )
+        for file in glob.glob(OUTPUT_DIR + "/" + input_filename + "*" + OUTPUT_FILE_EXT)
     ]
-    numbering_file_list = [i for i in files if re.search(r"(\d)+", i)]
+    numbering_file_list = [i for i in files if re.search(r"\(\d\)+", i)]
 
-    print(files)
-
-    print(os.path.dirname(__file__) + "/output/" + filename + ".mid")
-
+    audio_data = new_music.fluidsynth(
+        sf2_path=CURRENT_DIR + "/sf/GeneralUser GS v1.471.sf2"
+    )
     if len(files) == 0:
-        new_music.write(os.path.dirname(__file__) + "/output/" + filename + ".mid")
+
+        output_filename = OUTPUT_DIR + "/" + input_filename + OUTPUT_FILE_EXT
+        wavfile.write(output_filename, 44100, audio_data)
+
     else:
-        number_list = [int(re.search(r"\d+", i).group()) for i in numbering_file_list]
-        print(len(number_list))
-        print(number_list)
+        number_list = [
+            int(re.search(r"\d+", re.search(r"\(\d\)+", i).group()).group())
+            for i in numbering_file_list
+        ]
         max_num = 0
         if len(number_list) != 0:
             max_num = max(number_list)
 
-        new_music.write(
-            os.path.dirname(__file__)
-            + "/output/"
-            + filename
+        output_filename = (
+            OUTPUT_DIR
+            + "/"
+            + input_filename
             + "("
             + str(max_num + 1)
-            + ").mid"
+            + ")"
+            + OUTPUT_FILE_EXT
         )
+
+        wavfile.write(output_filename, 44100, audio_data)
+
+
+create_music(
+    "/Users/sasakimanami/Documents/Github/movie2music/backend/sampleFiles/sample3.mov"
+)

@@ -39,3 +39,8 @@ yarn-error.log*
 *.mid
 
 __pycache__
+backend/sf
+backend/output
+
+*.mp3
+*.wav
