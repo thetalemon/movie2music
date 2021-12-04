@@ -5,15 +5,15 @@ import pretty_midi, glob, re
 from pathlib import Path
 from scipy.io import wavfile
 
-OUTPUT_FILE_EXT = ".wav"
-CURRENT_DIR = str(Path(__file__).resolve().parent)
-OUTPUT_DIR = str(Path(__file__).resolve().parent) + "/output"
-
 
 def create_music(path):
+    OUTPUT_FILE_EXT = ".wav"
+    CURRENT_DIR = str(Path(__file__).resolve().parent)
+    OUTPUT_DIR = str(Path(__file__).resolve().parent) + "/output"
+    SF_DATA = CURRENT_DIR + "/sf/GeneralUser GS v1.471.sf2"
+    CELLO_PROGRAM = pretty_midi.instrument_name_to_program("Cello")
     new_music = pretty_midi.PrettyMIDI()
-    cello_program = pretty_midi.instrument_name_to_program("Cello")
-    cello = pretty_midi.Instrument(program=cello_program)
+    cello = pretty_midi.Instrument(program=CELLO_PROGRAM)
 
     time = 0.0
 
@@ -26,22 +26,21 @@ def create_music(path):
         time = time + 0.5
     new_music.instruments.append(cello)
 
-    input_filename = Path(path).stem
+    INPUT_FILE_NAME = Path(path).stem
     files = [
         Path(file).stem
-        for file in glob.glob(OUTPUT_DIR + "/" + input_filename + "*" + OUTPUT_FILE_EXT)
+        for file in glob.glob(
+            OUTPUT_DIR + "/" + INPUT_FILE_NAME + "*" + OUTPUT_FILE_EXT
+        )
     ]
-    numbering_file_list = [i for i in files if re.search(r"\(\d\)+", i)]
 
-    audio_data = new_music.fluidsynth(
-        sf2_path=CURRENT_DIR + "/sf/GeneralUser GS v1.471.sf2"
-    )
+    audio_data = new_music.fluidsynth(sf2_path=SF_DATA)
+
     if len(files) == 0:
-
-        output_filename = OUTPUT_DIR + "/" + input_filename + OUTPUT_FILE_EXT
+        output_filename = OUTPUT_DIR + "/" + INPUT_FILE_NAME + OUTPUT_FILE_EXT
         wavfile.write(output_filename, 44100, audio_data)
-
     else:
+        numbering_file_list = [i for i in files if re.search(r"\(\d\)+", i)]
         number_list = [
             int(re.search(r"\d+", re.search(r"\(\d\)+", i).group()).group())
             for i in numbering_file_list
@@ -53,7 +52,7 @@ def create_music(path):
         output_filename = (
             OUTPUT_DIR
             + "/"
-            + input_filename
+            + INPUT_FILE_NAME
             + "("
             + str(max_num + 1)
             + ")"

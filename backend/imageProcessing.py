@@ -21,13 +21,33 @@ def getMostColorName(img):
     return COLOR_NAME[maxIndex]
 
 
+def isCenterArea(width, height, x, y):
+    xCenterFlg = width * 0.25 < x and width * 0.75 > x
+    yCenterFlg = height * 0.25 < y and height * 0.75 > y
+    return xCenterFlg and yCenterFlg
+
+
+def drawFeatures(mask, frame, a, b, c, d, color, k):
+    mask = cv2.line(mask, (int(a), int(b)), (int(c), int(d)), color[k].tolist(), 2)
+    frame = cv2.circle(frame, (int(a), int(b)), 5, color[k].tolist(), -1)
+
+
+def updatePrevFrameData(good_new, frame_gray, old_gray, FEATURE_PARAMS):
+    if len(good_new) != 0:
+        return frame_gray.copy(), good_new.reshape(-1, 1, 2)
+    else:
+        return frame_gray.copy(), cv2.goodFeaturesToTrack(
+            old_gray, mask=None, **FEATURE_PARAMS
+        )
+
+
 def movieProcessing():
     mov = cv2.VideoCapture("./sampleFiles/sample3.mov")
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # 5フレームずつ
-    fpsRangeList = list(range(0, FRAME_COUNT, 5))
+    FPS_RANGE_LIST = list(range(0, FRAME_COUNT, 5))
 
     FEATURE_PARAMS = dict(maxCorners=100, qualityLevel=0.3, minDistance=7, blockSize=7)
 
@@ -44,18 +64,18 @@ def movieProcessing():
     p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
 
     mask = np.zeros_like(old_frame)
-    allVectors = list(range(len(fpsRangeList)))
-    allUpFlg = list(range(len(fpsRangeList)))
-    allCenterFlg = list(range(len(fpsRangeList)))
-    for i, j in enumerate(fpsRangeList):
+    allVectors = list(range(len(FPS_RANGE_LIST)))
+    allUpFlg = list(range(len(FPS_RANGE_LIST)))
+    allCenterFlg = list(range(len(FPS_RANGE_LIST)))
+    for i, j in enumerate(FPS_RANGE_LIST):
         _, frame = mov.read()
 
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         p1, st, err = cv2.calcOpticalFlowPyrLK(
             old_gray, frame_gray, p0, None, **LK_PARAMS
         )
-        width = mov.get(cv2.CAP_PROP_FRAME_WIDTH)
-        height = mov.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        WIDTH = mov.get(cv2.CAP_PROP_FRAME_WIDTH)
+        HEIGHT = mov.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         if p1 is not None:
             good_new = p1[st == 1]
@@ -68,22 +88,16 @@ def movieProcessing():
                 a, b = new.ravel()
                 c, d = old.ravel()
 
-                mask = cv2.line(
-                    mask, (int(a), int(b)), (int(c), int(d)), color[k].tolist(), 2
-                )
+                # 描画
+                drawFeatures(mask, frame, a, b, c, d, color, k)
+
                 vectors[k] = abs((c - a) ** 2 + (d - b) ** 2)
                 upFlg[k] = (c - a) > 0
-                frame = cv2.circle(frame, (int(a), int(b)), 5, color[k].tolist(), -1)
-                xCenterFlg = width * 0.25 < c and width * 0.75 > c
-                yCenterFlg = height * 0.25 < d and height * 0.75 > d
-                centerFlg[k] = xCenterFlg and yCenterFlg
+                centerFlg[k] = isCenterArea(WIDTH, HEIGHT, c, d)
 
-            if len(good_new) != 0:
-                old_gray = frame_gray.copy()
-                p0 = good_new.reshape(-1, 1, 2)
-            else:
-                old_gray = frame_gray.copy()
-                p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
+            old_gray, p0 = updatePrevFrameData(
+                good_new, frame_gray, old_gray, FEATURE_PARAMS
+            )
 
             allVectors[i] = vectors
             allUpFlg[i] = upFlg
@@ -107,3 +121,6 @@ def movieProcessing():
             "centerFlg": allCenterFlg,
         }
     )
+
+
+movieProcessing()
