@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os import path
 import cv2
 import numpy as np
 from makeMusic import create_music
@@ -8,7 +9,7 @@ from makeMusic import create_music
 
 def imgProcess(path):
     img = cv2.imread(path)
-    create_music(path)
+    # create_music(path)
     return getMostColorName(img)
 
 
@@ -42,7 +43,8 @@ def updatePrevFrameData(good_new, frame_gray, old_gray, FEATURE_PARAMS):
 
 
 def movieProcessing():
-    mov = cv2.VideoCapture("./sampleFiles/sample3.mov")
+    path = "./sampleFiles/sample3.mov"
+    mov = cv2.VideoCapture(path)
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -89,7 +91,7 @@ def movieProcessing():
                 c, d = old.ravel()
 
                 # 描画
-                drawFeatures(mask, frame, a, b, c, d, color, k)
+                # drawFeatures(mask, frame, a, b, c, d, color, k)
 
                 vectors[k] = abs((c - a) ** 2 + (d - b) ** 2)
                 upFlg[k] = (c - a) > 0
@@ -105,21 +107,22 @@ def movieProcessing():
 
         img = cv2.add(frame, mask)
 
-        cv2.imshow("frame", img)
-        k = cv2.waitKey(30) & 0xFF
-        if k == 27:
-            break
+        # cv2.imshow("frame", img)
+        # k = cv2.waitKey(30) & 0xFF
+        # if k == 27:
+        #     break
 
         getMostColorName(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
 
-    print(
+    create_music(
+        path,
         {
             "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
             "vectors": allVectors,
             "upFlg": allUpFlg,
             "centerFlg": allCenterFlg,
-        }
+        },
     )
 
 
