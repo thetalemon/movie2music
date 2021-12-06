@@ -48,8 +48,8 @@ def movieProcessing():
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # 5フレームずつ
-    FPS_RANGE_LIST = list(range(0, FRAME_COUNT, 5))
+    # 1秒を4分割
+    FPS_RANGE_LIST = np.arange(0.0, FRAME_COUNT, mov.get(cv2.CAP_PROP_FPS) / 4)
 
     FEATURE_PARAMS = dict(maxCorners=100, qualityLevel=0.3, minDistance=7, blockSize=7)
 
@@ -59,13 +59,13 @@ def movieProcessing():
         criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03),
     )
 
-    color = np.random.randint(0, 255, (100, 3))
+    # color = np.random.randint(0, 255, (100, 3))
 
     _, old_frame = mov.read()
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
     p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **FEATURE_PARAMS)
 
-    mask = np.zeros_like(old_frame)
+    # mask = np.zeros_like(old_frame)
     allVectors = list(range(len(FPS_RANGE_LIST)))
     allUpFlg = list(range(len(FPS_RANGE_LIST)))
     allCenterFlg = list(range(len(FPS_RANGE_LIST)))
@@ -105,8 +105,8 @@ def movieProcessing():
             allUpFlg[i] = upFlg
             allCenterFlg[i] = centerFlg
 
-        img = cv2.add(frame, mask)
-
+        # 特徴点画像表示
+        # img = cv2.add(frame, mask)
         # cv2.imshow("frame", img)
         # k = cv2.waitKey(30) & 0xFF
         # if k == 27:
@@ -114,6 +114,18 @@ def movieProcessing():
 
         getMostColorName(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
+
+    print(
+        {
+            "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
+            "vectors": allVectors,
+            "upFlg": allUpFlg,
+            "centerFlg": allCenterFlg,
+        }
+    )
+    print(mov.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(int(mov.get(cv2.CAP_PROP_FPS) + 1))
+    print(int(mov.get(cv2.CAP_PROP_FPS) + 1) / 5)
 
     create_music(
         path,
