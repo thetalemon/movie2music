@@ -19,8 +19,16 @@ def create_music(path, movdata):
 
     # 画像のframeが4秒4分割なので、2で0.5秒ずつ、1で0.25秒ずつでテンポ調整できる。
     # ３拍子は一旦諦める…。
+    noteNum = 0
     for i in list(range(0, len(movdata["vectors"]), 2)):
-        note_name = NOTE_lIST[i % len(NOTE_lIST)]
+        upJudge = 1 if movdata["upFlg"][i] and movdata["upFlg"][i][0] else -1
+        noteNum = noteNum + upJudge
+        if noteNum < 0:
+            noteNum = 2
+        elif noteNum > 7:
+            noteNum = 5
+
+        note_name = NOTE_lIST[noteNum]
         note_number = pretty_midi.note_name_to_number(note_name)
         note = pretty_midi.Note(
             velocity=100, pitch=note_number, start=time, end=(time + 0.5)
@@ -48,6 +56,7 @@ def create_music(path, movdata):
             int(re.search(r"\d+", re.search(r"\(\d\)+", i).group()).group())
             for i in numbering_file_list
         ]
+
         max_num = 0
         if len(number_list) != 0:
             max_num = max(number_list)
