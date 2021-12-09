@@ -10,16 +10,39 @@ from makeMusic import create_music
 def imgProcess(path):
     img = cv2.imread(path)
     # create_music(path)
-    return getMostColorName(img)
+    return getHsvColor(img)
 
 
-def getMostColorName(img):
-    COLOR_NAME = ("blue", "green", "red")
+def getHsvColor(img):
+    hsvImg = list(range(len(img)))
+    for i, j in enumerate(img):
+        hsvRow = list(range(len(j)))
+        for k, l in enumerate(j):
+            maxIndex = np.argmax(l)
+            MAX = int(max(l))
+            MIN = int(min(l))
+            BLUE = int(l[0])
+            GREEN = int(l[1])
+            RED = int(l[2])
+            if BLUE == GREEN and GREEN == RED and BLUE == RED:
+                h = 0
+            elif maxIndex == 0:
+                h = 60 * ((RED - GREEN) / (MAX - MIN)) + 240
+                if h < 0:
+                    h = h + 360
+            elif maxIndex == 1:
+                h = 60 * ((BLUE - RED) / (MAX - MIN)) + 120
+            elif maxIndex == 2:
+                h = 60 * ((GREEN - BLUE) / (MAX - MIN))
 
-    sums = [img[:, :, ch].sum() for ch in range(img.shape[2])]
-    maxIndex = sums.index(max(sums))
+            if h < 0:
+                h = h + 360
 
-    return COLOR_NAME[maxIndex]
+            s = (MAX - MIN) / MAX
+            v = MAX
+            hsvRow[k] = [h, s, v]
+        hsvImg[i] = hsvRow
+    return hsvImg
 
 
 def isCenterArea(width, height, x, y):
@@ -47,6 +70,9 @@ def movieProcessing():
     mov = cv2.VideoCapture(path)
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    if mov.get(cv2.CAP_PROP_FPS) == 0:
+        return
 
     # 1秒を4分割
     FPS_RANGE_LIST = np.arange(0.0, FRAME_COUNT, mov.get(cv2.CAP_PROP_FPS) / 4)
@@ -112,7 +138,7 @@ def movieProcessing():
         # if k == 27:
         #     break
 
-        getMostColorName(frame)
+        getHsvColor(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
 
     print(
@@ -138,4 +164,7 @@ def movieProcessing():
     )
 
 
-movieProcessing()
+imgProcess(
+    "/Users/sasakimanami/Documents/Github/movie2music/backend/sampleFiles/sample.png"
+)
+# movieProcessing()
