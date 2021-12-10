@@ -9,14 +9,15 @@ from makeMusic import create_music
 
 def imgProcess(path):
     img = cv2.imread(path)
-    # create_music(path)
     return getHsvColor(img)
 
 
 def getHsvColor(img):
     hsvImg = list(range(len(img)))
     for i, j in enumerate(img):
-        hsvRow = list(range(len(j)))
+        hList = list(range(len(j)))
+        sList = list(range(len(j)))
+        vList = list(range(len(j)))
         for k, l in enumerate(j):
             maxIndex = np.argmax(l)
             MAX = int(max(l))
@@ -40,8 +41,10 @@ def getHsvColor(img):
 
             s = (MAX - MIN) / MAX
             v = MAX
-            hsvRow[k] = [h, s, v]
-        hsvImg[i] = hsvRow
+            hList[k] = h
+            sList[k] = s
+            vList[k] = v
+        hsvImg[i] = [np.average(hList), np.average(sList), np.average(vList)]
     return hsvImg
 
 
@@ -67,6 +70,7 @@ def updatePrevFrameData(good_new, frame_gray, old_gray, FEATURE_PARAMS):
 
 def movieProcessing():
     path = "./sampleFiles/sample3.mov"
+    print(path)
     mov = cv2.VideoCapture(path)
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -95,6 +99,7 @@ def movieProcessing():
     allVectors = list(range(len(FPS_RANGE_LIST)))
     allUpFlg = list(range(len(FPS_RANGE_LIST)))
     allCenterFlg = list(range(len(FPS_RANGE_LIST)))
+    allHsv = list(range(len(FPS_RANGE_LIST)))
     for i, j in enumerate(FPS_RANGE_LIST):
         _, frame = mov.read()
 
@@ -127,9 +132,11 @@ def movieProcessing():
                 good_new, frame_gray, old_gray, FEATURE_PARAMS
             )
 
-            allVectors[i] = vectors
+            allVectors[i] = np.average(vectors)
             allUpFlg[i] = upFlg
             allCenterFlg[i] = centerFlg
+
+        allHsv[i] = getHsvColor(frame)
 
         # 特徴点画像表示
         # img = cv2.add(frame, mask)
@@ -138,7 +145,7 @@ def movieProcessing():
         # if k == 27:
         #     break
 
-        getHsvColor(frame)
+        hsv = getHsvColor(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
 
     print(
@@ -147,6 +154,7 @@ def movieProcessing():
             "vectors": allVectors,
             "upFlg": allUpFlg,
             "centerFlg": allCenterFlg,
+            "hsv": hsv,
         }
     )
     print(mov.get(cv2.CAP_PROP_FRAME_COUNT))
