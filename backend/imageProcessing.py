@@ -5,6 +5,7 @@ from os import path
 import cv2
 import numpy as np
 from makeMusic import create_music
+import scipy.stats as stats
 
 
 def imgProcess(path):
@@ -12,40 +13,18 @@ def imgProcess(path):
     return getHsvColor(img)
 
 
+def rgb_to_hsv(bgr):
+    hsv = cv2.cvtColor(
+        np.array([[[bgr[0], bgr[1], bgr[2]]]], dtype=np.uint8), cv2.COLOR_BGR2HSV
+    )[0][0]
+    return (hsv[0] / 255 * 360, hsv[1], hsv[2])
+
+
 def getHsvColor(img):
-    hsvImg = list(range(len(img)))
-    for i, j in enumerate(img):
-        hList = list(range(len(j)))
-        sList = list(range(len(j)))
-        vList = list(range(len(j)))
-        for k, l in enumerate(j):
-            maxIndex = np.argmax(l)
-            MAX = int(max(l))
-            MIN = int(min(l))
-            BLUE = int(l[0])
-            GREEN = int(l[1])
-            RED = int(l[2])
-            if BLUE == GREEN and GREEN == RED and BLUE == RED:
-                h = 0
-            elif maxIndex == 0:
-                h = 60 * ((RED - GREEN) / (MAX - MIN)) + 240
-                if h < 0:
-                    h = h + 360
-            elif maxIndex == 1:
-                h = 60 * ((BLUE - RED) / (MAX - MIN)) + 120
-            elif maxIndex == 2:
-                h = 60 * ((GREEN - BLUE) / (MAX - MIN))
+    sumBgr = [img[:, :, ch].sum() for ch in range(img.shape[2])]
+    hsv = rgb_to_hsv(sumBgr)
 
-            if h < 0:
-                h = h + 360
-
-            s = (MAX - MIN) / MAX
-            v = MAX
-            hList[k] = h
-            sList[k] = s
-            vList[k] = v
-        hsvImg[i] = [np.average(hList), np.average(sList), np.average(vList)]
-    return hsvImg
+    return hsv
 
 
 def isCenterArea(width, height, x, y):
@@ -70,7 +49,7 @@ def updatePrevFrameData(good_new, frame_gray, old_gray, FEATURE_PARAMS):
 
 def movieProcessing():
     path = "./sampleFiles/sample3.mov"
-    print(path)
+    # print(path)
     mov = cv2.VideoCapture(path)
 
     FRAME_COUNT = int(mov.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -133,8 +112,12 @@ def movieProcessing():
             )
 
             allVectors[i] = np.average(vectors)
-            allUpFlg[i] = upFlg
-            allCenterFlg[i] = centerFlg
+            mode_val, _ = stats.mode(upFlg)
+            if len(mode_val) > 0:
+                allUpFlg[i] = mode_val[0]
+            else:
+                allUpFlg[i] = False
+            # allCenterFlg[i] = centerFlg
 
         allHsv[i] = getHsvColor(frame)
 
@@ -145,7 +128,6 @@ def movieProcessing():
         # if k == 27:
         #     break
 
-        hsv = getHsvColor(frame)
         mov.set(cv2.CAP_PROP_POS_FRAMES, j)
 
     print(
@@ -153,26 +135,26 @@ def movieProcessing():
             "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
             "vectors": allVectors,
             "upFlg": allUpFlg,
-            "centerFlg": allCenterFlg,
-            "hsv": hsv,
+            # "centerFlg": allCenterFlg,
+            "hsv": allHsv,
         }
     )
     print(mov.get(cv2.CAP_PROP_FRAME_COUNT))
     print(int(mov.get(cv2.CAP_PROP_FPS) + 1))
     print(int(mov.get(cv2.CAP_PROP_FPS) + 1) / 5)
 
-    create_music(
-        path,
-        {
-            "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
-            "vectors": allVectors,
-            "upFlg": allUpFlg,
-            "centerFlg": allCenterFlg,
-        },
-    )
+    # create_music(
+    #     path,
+    #     {
+    #         "second": (FRAME_COUNT / mov.get(cv2.CAP_PROP_FPS)),
+    #         "vectors": allVectors,
+    #         "upFlg": allUpFlg,
+    #         "centerFlg": allCenterFlg,
+    #     },
+    # )
 
 
-imgProcess(
-    "/Users/sasakimanami/Documents/Github/movie2music/backend/sampleFiles/sample.png"
-)
-# movieProcessing()
+# imgProcess(
+#     "/Users/sasakimanami/Documents/Github/movie2music/backend/sampleFiles/sample.png"
+# )
+movieProcessing()
