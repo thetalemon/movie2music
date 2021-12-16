@@ -77,7 +77,7 @@ def movieProcessing():
     # mask = np.zeros_like(old_frame)
     allVectors = list(range(len(FPS_RANGE_LIST)))
     allUpFlg = list(range(len(FPS_RANGE_LIST)))
-    allCenterFlg = list(range(len(FPS_RANGE_LIST)))
+    # allCenterFlg = list(range(len(FPS_RANGE_LIST)))
     allHsv = list(range(len(FPS_RANGE_LIST)))
     for i, j in enumerate(FPS_RANGE_LIST):
         _, frame = mov.read()
@@ -86,7 +86,7 @@ def movieProcessing():
         p1, st, err = cv2.calcOpticalFlowPyrLK(
             old_gray, frame_gray, p0, None, **LK_PARAMS
         )
-        WIDTH = mov.get(cv2.CAP_PROP_FRAME_WIDTH)
+        # WIDTH = mov.get(cv2.CAP_PROP_FRAME_WIDTH)
         HEIGHT = mov.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         if p1 is not None:
@@ -94,7 +94,7 @@ def movieProcessing():
             good_old = p0[st == 1]
             vectors = list(range(len(good_new)))
             upFlg = list(range(len(good_new)))
-            centerFlg = list(range(len(good_new)))
+            # centerFlg = list(range(len(good_new)))
 
             for k, (new, old) in enumerate(zip(good_new, good_old)):
                 a, b = new.ravel()
@@ -104,19 +104,28 @@ def movieProcessing():
                 # drawFeatures(mask, frame, a, b, c, d, color, k)
 
                 vectors[k] = abs((c - a) ** 2 + (d - b) ** 2)
-                upFlg[k] = (c - a) > 0
-                centerFlg[k] = isCenterArea(WIDTH, HEIGHT, c, d)
+                if abs(d - b) < HEIGHT * 0.005:
+                    upFlg[k] = 0
+                elif (d - b) > HEIGHT * 0.005:
+                    upFlg[k] = 1
+                elif (d - b) < -(HEIGHT * 0.005):
+                    upFlg[k] = -1
+
+                # centerFlg[k] = isCenterArea(WIDTH, HEIGHT, c, d)
 
             old_gray, p0 = updatePrevFrameData(
                 good_new, frame_gray, old_gray, FEATURE_PARAMS
             )
+            if len(allVectors) > 0:
+                allVectors[i] = np.average(vectors)
+            else:
+                allVectors[i] = 0
 
-            allVectors[i] = np.average(vectors)
-            mode_val, _ = stats.mode(upFlg)
-            if len(mode_val) > 0:
+            if len(upFlg) > 0:
+                mode_val, _ = stats.mode(upFlg)
                 allUpFlg[i] = mode_val[0]
             else:
-                allUpFlg[i] = False
+                allUpFlg[i] = 0
             # allCenterFlg[i] = centerFlg
 
         allHsv[i] = getHsvColor(frame)
