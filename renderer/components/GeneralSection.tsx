@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 import styled from '@emotion/styled'
 
 const MySection = styled.section`
-  margin-left: 8px;
+  text-align: center;
 `
 
 type Props = {

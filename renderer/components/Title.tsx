@@ -4,6 +4,7 @@ import styled from '@emotion/styled'
 
 const TitleH1 = styled.h1`
   margin-bottom: 4px;
+  text-align: center;
 `
 
 type Props = {

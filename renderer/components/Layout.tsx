@@ -6,31 +6,33 @@ import styled from '@emotion/styled'
 const MainBody = styled.div`
   background: #fff;
   margin: 0;
+  a {
+    text-decoration: none;
+    margin-right: 16px;
+    padding-right: 16px;
+    color: #10467c;
+    &:last-child {
+      margin-right: 0;
+      padding-right: 0;
+      border-right: none;
+    }
+    &:hover {
+      opacity: .7;
+      font-style: italic;
+    }
+  }
 `
 
 const MainNav = styled.nav`
   background: #fff;
   text-align: center;
   padding: 4px 0;
-  border-bottom: 1px #c0c0c0 solid;
-  a {
-    text-decoration: none;
-    margin-right: 8px;
-    padding-right: 8px;
-    border-right: 1px #3C3C3C solid;
-    &:last-child {
-      margin-right: 0;
-      padding-right: 0;
-      border-right: none;
-    }
-  }
 `
 
 
 const MainFooter = styled.footer`
   padding: 4px 0 ;
   margin-top: 8px;
-  border-top: 1px #c0c0c0 solid;
   text-align: center;
 `
 
@@ -63,7 +65,7 @@ const Layout = ({ children, title = 'This is the default title' }: Props) => (
       {children}
     </div>
     <MainFooter>
-      <span>© manasas</span>
+      <a href='https://manasas.dev'>© manasas</a>
     </MainFooter>
   </MainBody>
 )
