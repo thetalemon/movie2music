@@ -42,7 +42,7 @@ const IndexPage = () => {
       <GeneralSection>
         <SelectedFileArea filePath={filePath} onClickDoImgProcess={ onClickDoImgProcess } />
       </GeneralSection>
-      <Title text="Generated files" />
+      <Title text="生成したファイル" />
       <GeneralSection>
         <PathTable pathList={pathList} />
       </GeneralSection>
