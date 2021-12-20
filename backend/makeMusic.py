@@ -49,7 +49,23 @@ def create_music(path, movdata):
     new_music = pretty_midi.PrettyMIDI()
     piano = defineInstrument("Acoustic Grand Piano")
     bass = defineInstrument("Electric Bass (pick)")
-    NOTE_lIST = ["C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6"]
+    NOTE_lIST = [
+        "C5",
+        "D5",
+        "E5",
+        "F5",
+        "G5",
+        "A5",
+        "B5",
+        "C6",
+        "D6",
+        "E6",
+        "F6",
+        "G6",
+        "A6",
+        "B6",
+        "C7",
+    ]
 
     time = 0.0
     bass_time = 0.0
@@ -57,17 +73,28 @@ def create_music(path, movdata):
     # 画像のframeが4秒4分割なので、2で0.5秒ずつ、1で0.25秒ずつでテンポ調整できる。
     # ３拍子は一旦諦める…。
     note_num = 0
+    repeat_flg = False
     for i in list(range(0, len(movdata["vectors"]), 1)):
-        upJudge = 1 if movdata["upFlg"][i] else -1
+        upJudge = movdata["upFlg"][i]
         if note_num == 0 and upJudge == -1:
-            note_num = randint(len(NOTE_lIST))
+            note_num = randint(len(NOTE_lIST) - 1)
+        elif upJudge == 0:
+            if not repeat_flg:
+                note_num = note_num + upJudge * 2
+                repeat_flg = True
+            else:
+                note_num = note_num + randint(-3, 3)
+                repeat_flg = False
         else:
-            note_num = note_num + upJudge
+            note_num = note_num + upJudge * 2
 
         if note_num < 0:
             note_num = note_num + randint(2, len(NOTE_lIST) - note_num - 1)
-        elif note_num > 7:
-            note_num = note_num - randint(len(NOTE_lIST) - note_num + 1, 5)
+        elif note_num >= len(NOTE_lIST):
+
+            note_num = note_num - randint(
+                len(NOTE_lIST) - note_num + 1, len(NOTE_lIST) - 2
+            )
 
         note_name = NOTE_lIST[note_num]
         note_number = pretty_midi.note_name_to_number(note_name)
