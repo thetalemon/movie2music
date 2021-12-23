@@ -74,8 +74,17 @@ def create_music(path, movdata):
     # ３拍子は一旦諦める…。
     note_num = 0
     repeat_flg = False
-    for i in list(range(0, len(movdata["vectors"]), 1)):
-        upJudge = movdata["upFlg"][i]
+    current_frame = 0
+    # for i in list(range(0, len(movdata["vectors"]), 1)):
+    while current_frame < len(movdata["vectors"]):
+        if movdata["vectors"][current_frame] < 1000:
+            speed = 1.0
+        elif movdata["vectors"][current_frame] < 10000:
+            speed = 0.5
+        else:
+            speed = 0.25
+
+        upJudge = movdata["upFlg"][current_frame]
         if note_num == 0 and upJudge == -1:
             note_num = randint(len(NOTE_lIST) - 1)
         elif upJudge == 0:
@@ -89,26 +98,32 @@ def create_music(path, movdata):
             note_num = note_num + upJudge * 2
 
         if note_num < 0:
-            note_num = note_num + randint(2, len(NOTE_lIST) - note_num - 1)
+            note_num = note_num + randint(2, len(NOTE_lIST) - note_num - 2)
         elif note_num >= len(NOTE_lIST):
-
             note_num = note_num - randint(
-                len(NOTE_lIST) - note_num + 1, len(NOTE_lIST) - 2
+                len(NOTE_lIST) - (note_num / 2), len(NOTE_lIST)
             )
-
         note_name = NOTE_lIST[note_num]
         note_number = pretty_midi.note_name_to_number(note_name)
         piano.notes.append(
             pretty_midi.Note(
-                velocity=100, pitch=note_number, start=time, end=(time + 0.25)
+                velocity=100, pitch=note_number, start=time, end=(time + speed)
             )
         )
 
-        if i % 4 == 0:
+        if current_frame % 4 == 0:
             bassAppend(bass, note_num, bass_time)
             bass_time = bass_time + 1
 
-        time = time + 0.25
+        time = time + speed
+
+        if movdata["vectors"][current_frame] < 1000:
+            current_frame = current_frame + 4
+        elif movdata["vectors"][current_frame] < 10000:
+            current_frame = current_frame + 2
+        else:
+            current_frame = current_frame + 1
+
     new_music.instruments.append(piano)
     new_music.instruments.append(bass)
 
