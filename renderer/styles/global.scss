@@ -1,0 +1,15 @@
+a {
+  text-decoration: none;
+  margin-right: 16px;
+  padding-right: 16px;
+  color: #10467c;
+  &:last-child {
+    margin-right: 0;
+    padding-right: 0;
+    border-right: none;
+  }
+  &:hover {
+    opacity: 0.7;
+    font-style: italic;
+  }
+}

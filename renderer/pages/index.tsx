@@ -34,8 +34,8 @@ const IndexPage = () => {
   }
 
   return (
-    <Layout title="Home | Next.js + TypeScript + Electron Example">
-      <Title text="動画に基づいた音楽を作る" />
+    <Layout title="generate music based on movie">
+      <Title text="動画に基づいた音楽を作るしすてむ" />
       <GeneralSection>
         <Button text="ファイルを選択" onClick={onClickSetFile} />
       </GeneralSection>
