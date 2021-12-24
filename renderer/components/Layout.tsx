@@ -6,29 +6,12 @@ import styled from '@emotion/styled'
 const MainBody = styled.div`
   background: #fff;
   margin: 0;
-  a {
-    text-decoration: none;
-    margin-right: 16px;
-    padding-right: 16px;
-    color: #10467c;
-    &:last-child {
-      margin-right: 0;
-      padding-right: 0;
-      border-right: none;
-    }
-    &:hover {
-      opacity: .7;
-      font-style: italic;
-    }
-  }
 `
 
 const MainNav = styled.nav`
-  background: #fff;
   text-align: center;
   padding: 4px 0;
 `
-
 
 const MainFooter = styled.footer`
   padding: 4px 0 ;
