@@ -1,0 +1,16 @@
+import React, { ReactNode } from 'react'
+import styled from '@emotion/styled'
+
+const MySection = styled.section`
+  text-align: center;
+`
+
+type Props = {
+  children: ReactNode
+}
+
+const GeneralSection = ({ children }: Props) => (
+  <MySection>{children}</MySection>
+)
+
+export default GeneralSection
